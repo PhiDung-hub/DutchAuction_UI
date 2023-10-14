@@ -43,8 +43,9 @@ export default function ConnectWallet() {
     setIsOpen(false);
   }
   return (
-    <div>
-      <button className='text-white/60 hover:text-white font-bold' onClick={openModal}>
+    <div className='group bg-gray-800/50'>
+      {/* NOTE: padding is adjusted based on text size (height = 28px) and scroll size (8px) */}
+      <button className='text-lg text-white/60 group-hover:text-white pl-4 pr-6 py-4 font-bold' onClick={openModal}>
         {isConnected ? truncateAddress(address!) : 'Connect Wallet'}
       </button>
       <Modal
@@ -54,7 +55,7 @@ export default function ConnectWallet() {
         style={customStyles}
         contentLabel="Wallet Modal"
       >
-        <WalletMenu />
+        <WalletMenu closeModal={closeModal}/>
         <button className='text-black' onClick={closeModal}>Close</button>
       </Modal>
     </div>
