@@ -26,9 +26,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" />
       </head>
       <WagmiProvider>
-        <body className="bg-v3-bg h-screen w-screen overflow-x-hidden flex flex-col justify-between">
+        <body className="bg-v3-bg min-h-screen w-screen overflow-x-hidden flex flex-col justify-between">
           <AppHeader />
-          {children}
+          <div className='flex-1'>
+            {children}
+          </div>
           <Footer />
         </body>
       </WagmiProvider>

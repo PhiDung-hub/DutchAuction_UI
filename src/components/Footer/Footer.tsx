@@ -5,7 +5,7 @@ import TwitterIcon from '~/icons/TwitterIcon';
 
 const Footer = () => {
   return (
-    <footer className="flex text-center justify-center items-center p-4 text-xs text-white space-x-4">
+    <footer className="flex text-center justify-center items-center pt-8 pb-4 text-xs text-white space-x-4">
       <Link href="https://twitter.com" target="_blank" className="hover:text-v3-primary">
         <TwitterIcon width={40} height={40} />
       </Link>

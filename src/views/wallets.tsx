@@ -12,7 +12,7 @@ import CloseIcon from '~/icons/wallets/CloseIcon'
 import CoinbaseWalletIcon from '~/icons/wallets/CoinbaseWallet'
 import MetaMaskIcon from '~/icons/wallets/MetaMask'
 import WalletConnectIcon from '~/icons/wallets/WalletConnect'
-import { truncateAddress } from '~/lib/ethers'
+import { truncateAddress } from '~/lib/blockchain'
 
 const iconMap: {
   [key: string]: ReactElement;

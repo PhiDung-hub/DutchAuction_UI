@@ -3,7 +3,7 @@ import React from 'react';
 import { WalletMenu } from '~/views/wallets';
 import { useAccount } from 'wagmi';
 
-import { truncateAddress } from '~/lib/ethers';
+import { truncateAddress } from '~/lib/blockchain';
 
 const customStyles = {
   overlay: {
