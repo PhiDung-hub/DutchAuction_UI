@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
-
 export default function Portfolio() {
-  return <></>;
+  return (
+    <div>
+    </div>
+  );
 }
 
 export const metadata: Metadata = {
   title: 'Portoflio - Dutch Auction',
-  description: 'Profile details',
+  description: 'User profile: activity history, balances, etc.',
 }

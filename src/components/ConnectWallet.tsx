@@ -56,7 +56,6 @@ export default function ConnectWallet() {
         contentLabel="Wallet Modal"
       >
         <WalletMenu closeModal={closeModal}/>
-        <button className='text-black' onClick={closeModal}>Close</button>
       </Modal>
     </div>
   )

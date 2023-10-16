@@ -11,6 +11,23 @@
   --scrollbar-color: #C7F284;
 }
 
+input {
+  outline: none;             /* Remove the outline that appears on focus */
+  -webkit-appearance: none;  /* Remove default appearance in WebKit browsers like Chrome and Safari */
+  -moz-appearance: none;     /* Remove default appearance in Firefox */
+}
+
+/**** Disable spin button for number inputs  ****/
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 /******* Scollbar styling *********/
 ::-webkit-scrollbar {
   width: 8px;

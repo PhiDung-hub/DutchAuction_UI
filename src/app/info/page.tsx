@@ -6,5 +6,5 @@ export default function Info() {
 
 export const metadata: Metadata = {
   title: 'Info - Dutch Auction',
-  description: 'Active Auction Info',
+  description: 'Past auctions info / aggregated protocol stats',
 }

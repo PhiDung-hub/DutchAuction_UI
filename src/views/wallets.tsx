@@ -62,7 +62,7 @@ export function WalletMenu({ closeModal }: { closeModal: Function }) {
             key={connector.id}
             onClick={() => {
               connect({ connector });
-              // closeModal();
+              closeModal();
             }}
             className='flex gap-2 p-4 my-2 w-[15rem] border-gray-700 border-2 rounded-lg text-white/60 hover:text-white bg-slate-600/20'
           >

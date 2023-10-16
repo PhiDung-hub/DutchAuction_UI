@@ -9,3 +9,4 @@ export function truncateAddress(address: `0x${string}`) {
 
   return `${prefix}...${suffix}`;
 }
+
