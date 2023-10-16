@@ -13,6 +13,10 @@ export default function AuctionUI() {
   const [bidValue, setBidValue] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const bidAtCurrentPrice = async () => {
+    alert("Bid");
+  }
+
   // NOTE: on price change, update UI & value.
   // Uncomment code when contract is ready
   useEffect(() => {
@@ -22,18 +26,19 @@ export default function AuctionUI() {
       // const currentPrice = await getAuctionPrice();
       // setPrice(currentPrice);
 
+      setActiveIndex(index => index + 1);
       if (previousPrice != currentPrice && notifyUI) {
         setPriceChange(true);
         setTimeout(() => setPriceChange(false), 20_000); // blink the UI for 10s
       }
     };
-    setInterval(() => setActiveIndex(index => index + 1), 100);
     // NOTE: Handle URL navigation
     updatePrice(false);
 
 
-    const priceUpdate = setInterval(updatePrice, DUTCH_AUCTION_INTERVAL);
-    return () => clearInterval(priceUpdate);
+    // NOTE: interval for demo movement only
+    const updateHandler = setInterval(updatePrice, DUTCH_AUCTION_INTERVAL / 1000);
+    return () => clearInterval(updateHandler);
   }, [])
 
   return (
@@ -88,19 +93,29 @@ export default function AuctionUI() {
 
       <div
         aria-label="Bid Price"
-        className="flex text-center justify-center pb-4 px-4 text-xl w-full"
+        className="flex text-center justify-center px-4 text-xl w-full"
       >
         <span
-          className="w-[10rem] border border-r-0 border-t-0 border-white/20 rounded-bl-md p-2 bg-v3-bg"
+          className="w-[10rem] border border-r-0 border-t-0 border-white/20 p-2 bg-v3-bg"
         >
           Price (Ether {ETHER_SYMBOL})
         </span>
 
         <span
-          className="w-[7rem] border border-t-0 border-white/20 rounded-br-md p-2 bg-v3-bg/50"
+          className="w-[7rem] border border-t-0 border-white/20 p-2 bg-v3-bg/50"
         >
           {bidValue / Number(price)}
         </span>
+      </div>
+
+      <div className="group flex justify-center">
+        <button
+          className="w-[17rem] px-4 py-2 border border-t-0 border-white/20 
+          rounded-b-md bg-v3-bg/50"
+          onClick={bidAtCurrentPrice}
+        >
+          <span className="text-3xl text-white/50 group-hover:animate-pulse group-hover:text-white">Bid</span>
+        </button>
       </div>
     </>
   )

@@ -254,14 +254,14 @@ export default withTooltip<AreaProps & Data, TooltipData>(
             <TooltipWithBounds
               key={Math.random()}
               top={tooltipTop - 12}
-              left={tooltipLeft + 12}
+              left={tooltipLeft - 80}
               style={tooltipStyles}
             >
               {`${formatFloat(getY(tooltipData))} ${ETHER_SYMBOL}`}
             </TooltipWithBounds>
             <Tooltip
               top={innerHeight + margin.top - 14}
-              left={tooltipLeft}
+              left={tooltipLeft - 80}
               style={{
                 ...defaultStyles,
                 minWidth: 160,
