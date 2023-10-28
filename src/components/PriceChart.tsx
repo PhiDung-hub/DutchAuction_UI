@@ -2,15 +2,14 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { AreaClosed, Line, Bar } from '@visx/shape';
-import appleStock, { AppleStock } from '@visx/mock-data/lib/mocks/appleStock';
-import { curveMonotoneX } from '@visx/curve';
+import { curveStep } from '@visx/curve';
 import { GridRows, GridColumns } from '@visx/grid';
 import { scaleTime, scaleLinear } from '@visx/scale';
 import { withTooltip, Tooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip';
 import { localPoint } from '@visx/event';
 import { LinearGradient } from '@visx/gradient';
-import { max, extent, bisector } from '@visx/vendor/d3-array';
+import { max, extent, bisector, min } from '@visx/vendor/d3-array';
 import { AxisLeft, AxisBottom } from '@visx/axis';
 
 import { ETHER_SYMBOL } from '~/lib/constants';
@@ -22,6 +21,7 @@ export const background = '#204051';
 export const background2 = '#1c2936';
 
 export const accentColor = "rgba(237, 255, 235, 0.4)";
+export const accentColorInactive = "rgba(237, 255, 235, 0.1)";
 
 const tooltipStyles = {
   ...defaultStyles,
@@ -43,7 +43,10 @@ const getX = (data_point: TooltipData) => new Date(data_point.date);
 const getY = (data_point: TooltipData) => data_point.price;
 const bisect = bisector<TooltipData, Date>((data_point) => new Date(data_point.date)).left;
 
-const demoData = appleStock.map(({ date, close }: AppleStock) => ({ date, price: close }));
+const demoData = [...Array(100).keys()].map((val, idx) => ({
+  date: new Date(Date.now() + 12_000 * idx).toISOString(),
+  price: 0.024 - Math.floor(val / 5) * 0.001,
+}))
 
 export type AreaProps = {
   width: number;
@@ -64,13 +67,13 @@ export default withTooltip<AreaProps & Data, TooltipData>(
     // chart layout
     width,
     height,
-    margin = { top: 16, right: 0, bottom: 54, left: 64 },
+    margin = { top: 16, right: -0, bottom: 54, left: 64 },
     // data
     data = demoData,
     title = "Auction Price: 1000 * X",
     xLabel = `Block timestamp`,
     yLabel = `Price in ${ETHER_SYMBOL}`,
-    activeIndex = 25,
+    activeIndex = null,
     // tooltips info
     showTooltip,
     hideTooltip,
@@ -98,7 +101,8 @@ export default withTooltip<AreaProps & Data, TooltipData>(
       () =>
         scaleLinear({
           range: [innerHeight + margin.top, margin.top],
-          domain: [0, (max(data, getY) || 0) + innerHeight / 3],
+          // domain: extent(data, getY) as [number, number],
+          domain: [min(data, getY) || 0, (max(data, getY) || 0)],
           nice: true,
         }),
       [margin.top, innerHeight],
@@ -140,6 +144,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
 
           {/* <LinearGradient id="area-background-gradient" from={background} to={background2} /> */}
           <LinearGradient id="area-gradient" from={accentColor} to={accentColor} toOpacity={0.1} />
+          <LinearGradient id="area-gradient-inactive" from={accentColorInactive} to={accentColorInactive} toOpacity={0.1} />
 
           <GridRows
             left={margin.left}
@@ -147,7 +152,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
             width={innerWidth}
             strokeDasharray="1,3"
             stroke={accentColor}
-            strokeOpacity={0}
+            strokeOpacity={0.1}
             pointerEvents="none"
           />
 
@@ -157,19 +162,30 @@ export default withTooltip<AreaProps & Data, TooltipData>(
             height={innerHeight}
             strokeDasharray="1,3"
             stroke={accentColor}
-            strokeOpacity={0.2}
+            strokeOpacity={0.1}
             pointerEvents="none"
           />
 
           <AreaClosed<TooltipData>
-            data={data}
+            data={data.slice(0, activeIndex ? activeIndex + 1 : undefined)}
             x={(d) => XScale(getX(d)) ?? 0}
             y={(d) => YScale(getY(d)) ?? 0}
             yScale={YScale}
             strokeWidth={1}
             stroke="url(#area-gradient)"
             fill="url(#area-gradient)"
-            curve={curveMonotoneX}
+            curve={curveStep}
+          />
+
+          <AreaClosed<TooltipData>
+            data={data.slice(activeIndex ?? undefined)}
+            x={(d) => XScale(getX(d)) ?? 0}
+            y={(d) => YScale(getY(d)) ?? 0}
+            yScale={YScale}
+            strokeWidth={1}
+            stroke="url(#area-gradient-inactive)"
+            fill="url(#area-gradient-inactive)"
+            curve={curveStep}
           />
 
           <AxisBottom
@@ -241,7 +257,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
                 cx={tooltipLeft}
                 cy={tooltipTop}
                 r={4}
-                className="fill-green-600 stroke-white/80 stroke-1"
+                className="fill-green-500 stroke-white/80 stroke-1"
                 pointerEvents="none"
               />
             </g>

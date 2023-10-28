@@ -11,3 +11,7 @@ export const formatFloat = (n: number, decimals = 3): string => {
 
   return formatted;
 }
+
+export function formatISOString(isoString: string) {
+  return isoString.replace('T', ' ').replace('Z', ' UTC');
+}

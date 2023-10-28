@@ -1,8 +1,8 @@
 "use client";
 
-import SexyText from "~/components/SexyText"
+import SexyText from "~/components/SexyText";
 import { useEffect, useState } from 'react';
-import { getCurrentBlock } from "~/lib/viems";
+import { getCurrentBlock } from "~/lib/client";
 import AuctionUI from "~/views/auction";
 
 export default function Home() {

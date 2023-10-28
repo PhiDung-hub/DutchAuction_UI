@@ -55,12 +55,6 @@ const HeaderLinks = () => {
         title={'Info'}
         icon={<RepoLogo width="20" height="24" />}
       />
-      <HeaderLink
-        href="/portfolio"
-        isActive={pathname === "/portfolio"}
-        title={'Portfolio'}
-        icon={<WalletIcon width="20" height="20" />}
-      />
     </div>
   );
 };
