@@ -59,20 +59,6 @@ export default function AuctionUI() {
         </div>
       </div>
 
-      <div className="mt-8 text-center">
-        <div className="mb-2 font-bold text-xl text-white/80">
-          Supply Remaining
-        </div>
-        <div className="text-3xl">
-          <span className="text-v3-primary">
-            {`${supplyRemaining}${TOKEN_SYMBOL}`}
-          </span>
-          <span className="text-white/60">
-            {` [${(100 * supplyRemaining / TOTAL_AUCTION_SUPPLY).toFixed(1)}%]`}
-          </span>
-        </div>
-      </div>
-
       <BidInput
         amount={bidValue}
         setAmount={setBidValue}
@@ -82,26 +68,35 @@ export default function AuctionUI() {
         buttonLabel="BID"
       />
 
-      <div aria-label="Active price" className="text-center my-4">
-        <p className="text-white/80 text-xl mb-2">Current Price</p>
-        <p className="text-white/80 text-2xl mb-2 flex gap-4 justify-center">
-          <span>
-            {`${TOKEN_SYMBOL}`}
-          </span>
-          <SwapIcon width={32} height={32} />
-          <span
-            className={classNames("text-v3-primary font-bold", { "!text-red-400 animate-pulse": priceChange })}
-          >{`${price > 0n ? price : '...'} ${ETHER_SYMBOL}`}</span>
-        </p>
+      <div className="flex gap-16 justify-center my-8">
+        <div aria-label="supply-remaining" className="text-center">
+          <div className="mb-2 text-xl text-white/80">
+            Remaining
+          </div>
+          <div className="text-2xl">
+            <span className="text-v3-primary">
+              {`${supplyRemaining}${TOKEN_SYMBOL}`}
+            </span>
+            <span className="text-white/50">
+              {` [${(100 * supplyRemaining / TOTAL_AUCTION_SUPPLY).toFixed(1)}%]`}
+            </span>
+          </div>
+        </div>
+
+        <div aria-label="active-price" className="text-center">
+          <p className="text-white/80 text-xl mb-2">Current Price</p>
+          <p className="text-2xl mb-2 flex gap-2 justify-center">
+            <span>
+              {`${TOKEN_SYMBOL}`}
+            </span>
+            <SwapIcon width={24} height={32} />
+            <span
+              className={classNames("text-v3-primary font-bold", { "!text-red-400 animate-pulse": priceChange })}
+            >{`${price > 0n ? price : '...'} ${ETHER_SYMBOL}`}</span>
+          </p>
+        </div>
       </div>
 
-      <div className="my-8 flex justify-center">
-        <button className="group p-4 border rounded-md border-white/20 bg-v3-bg/80">
-          <Link className="text-center text-xl hover:text-v3-primary/80" href="/info">
-            My Bids 🔗
-          </Link>
-        </button>
-      </div>
     </>
   )
 }

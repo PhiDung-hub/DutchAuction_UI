@@ -4,6 +4,7 @@ import SexyText from "~/components/SexyText";
 import { useEffect, useState } from 'react';
 import { getCurrentBlock } from "~/lib/client";
 import AuctionUI from "~/views/auction";
+import Link from "next/link";
 
 export default function Home() {
   const [block, setBlock] = useState(0n)
@@ -28,11 +29,16 @@ export default function Home() {
             <AuctionUI />
           </div>
 
-          <div className='group w-full self-end items-end text-right p-4'>
+          <div className="flex justify-between items-center group w-full text-right p-4">
+            <button className="group p-2 border rounded-md border-white/20 bg-v3-bg/80">
+              <Link className="text-center text-xl hover:text-v3-primary/80" href="/info">
+                My Bids 🔗
+              </Link>
+            </button>
             <a
-              className='text-green-400 group-hover:animate-pulse'
-              rel='noreferrer noopener'
-              target='_blank'
+              className="text-green-400 group-hover:animate-pulse"
+              rel="noreferrer noopener"
+              target="_blank"
               href={`https://etherscan.io/block/${block.toString()}`}
             >
               {`⬤ ${block === 0n ? '...' : block}`}
