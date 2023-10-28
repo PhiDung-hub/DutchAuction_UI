@@ -21,7 +21,7 @@ export const background = '#204051';
 export const background2 = '#1c2936';
 
 export const accentColor = "rgba(237, 255, 235, 0.4)";
-export const accentColorInactive = "rgba(237, 255, 235, 0.1)";
+export const accentColorInactive = "rgba(237, 255, 235, 0.05)";
 
 const tooltipStyles = {
   ...defaultStyles,
