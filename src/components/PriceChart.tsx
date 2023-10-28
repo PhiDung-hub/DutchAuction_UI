@@ -16,7 +16,7 @@ import { ETHER_SYMBOL } from '~/lib/constants';
 import { formatDate, formatFloat } from '~/lib/format';
 
 
-// NOTE: chart colors
+// NOTE: chart colorr
 export const background = '#204051';
 export const background2 = '#1c2936';
 
@@ -43,11 +43,6 @@ const getX = (data_point: TooltipData) => new Date(data_point.date);
 const getY = (data_point: TooltipData) => data_point.price;
 const bisect = bisector<TooltipData, Date>((data_point) => new Date(data_point.date)).left;
 
-const demoData = [...Array(100).keys()].map((val, idx) => ({
-  date: new Date(Date.now() + 12_000 * idx).toISOString(),
-  price: 0.024 - Math.floor(val / 5) * 0.001,
-}))
-
 export type AreaProps = {
   width: number;
   height: number;
@@ -55,7 +50,7 @@ export type AreaProps = {
 };
 
 export type Data = {
-  data?: TooltipData[];
+  data: TooltipData[];
   title?: string,
   xLabel?: string,
   activeIndex?: number | null,
@@ -69,7 +64,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
     height,
     margin = { top: 16, right: 16, bottom: 56, left: 80 },
     // data
-    data = demoData,
+    data,
     title = "Auction Price: 1000 * X",
     xLabel = `Block timestamp`,
     yLabel = `Price in ${ETHER_SYMBOL}`,
@@ -167,7 +162,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
           />
 
           <AreaClosed<TooltipData>
-            data={data.slice(0, activeIndex ? activeIndex + 1 : undefined)}
+            data={data.slice(0, activeIndex !== null ? activeIndex + 1 : undefined)}
             x={(d) => XScale(getX(d)) ?? 0}
             y={(d) => YScale(getY(d)) ?? 0}
             yScale={YScale}
@@ -178,7 +173,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
           />
 
           <AreaClosed<TooltipData>
-            data={data.slice(activeIndex ?? undefined)}
+            data={data.slice(activeIndex !== null ? activeIndex : undefined)}
             x={(d) => XScale(getX(d)) ?? 0}
             y={(d) => YScale(getY(d)) ?? 0}
             yScale={YScale}

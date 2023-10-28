@@ -1,7 +1,6 @@
 "use client";
 
 import classNames from "classnames";
-import Link from "next/link";
 import { useEffect, useState } from "react"
 import BidInput from "~/components/BidInput";
 import PriceChart from "~/components/PriceChart";
@@ -9,6 +8,11 @@ import Timer from "~/components/Timer";
 import SwapIcon from "~/icons/SwapIcon";
 import { ETHER_SYMBOL, TOKEN_SYMBOL } from "~/lib/constants";
 import { DUTCH_AUCTION_INTERVAL, MAX_INDIVIDUAL_SUPPLY, TOTAL_AUCTION_SUPPLY } from "~/lib/contracts/constants";
+
+const demoData = [...Array(100).keys()].map((val, idx) => ({
+  date: new Date(Date.now() + 12_000 * idx).toISOString(),
+  price: 0.024 - Math.floor(val / 5) * 0.001,
+}));
 
 export default function AuctionUI() {
   const [price, setPrice] = useState(0.022);
@@ -20,18 +24,24 @@ export default function AuctionUI() {
 
   // NOTE: on price change, update UI & value.
   useEffect(() => {
+    /** Fetch TULIP price from the auction contract */
     const updatePrice = async (notifyUI = true) => {
       const previousPrice = price;
       const currentPrice = price;
       // const currentPrice = await getAuctionPrice();
       // setPrice(currentPrice);
 
-      setActiveIndex(index => index + 1);
+      if (notifyUI) {
+        // TODO: change this to find the exact index
+        setActiveIndex(index => index + 1);
+      }
+
       if (previousPrice != currentPrice && notifyUI) {
         setPriceChange(true);
         setTimeout(() => setPriceChange(false), 20_000); // blink the UI for 10s
       }
     };
+
     // NOTE: Handle URL navigation
     updatePrice(false);
 
@@ -48,6 +58,7 @@ export default function AuctionUI() {
           <PriceChart
             width={800}
             height={480}
+            data={demoData}
             activeIndex={activeIndex}
             title={`Auction Price - ${TOKEN_SYMBOL} / ${ETHER_SYMBOL}`}
             xLabel="Time"
