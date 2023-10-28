@@ -1,6 +1,7 @@
 import { ETHER_SYMBOL } from "~/lib/constants";
 import { SetStateAction } from "react";
 import { twMerge } from "tailwind-merge";
+import { formatDecimal } from "~/lib/format";
 
 export type InputProps = {
   currentPrice: number;
@@ -28,11 +29,13 @@ export default function BidInput({
           </span>
           <input
             className="w-[7rem] border border-white/20 text-center rounded-tr-md p-2 bg-transparent"
-            value={amount > 0 ? amount : ''}
+            value={amount > 0 ? formatDecimal(amount, 1) : ''}
             onChange={(e) => {
-              const value = Number(e.target.value);
-              // NOTE: change this to remaining supply of active account
-              if (value >= 0 && value < maxAmount) {
+              const stringValue = e.target.value;
+              let value = parseFloat(stringValue);
+              if (isNaN(value)) {
+                setAmount(0);
+              } else if (value >= 0 && value < maxAmount) {
                 setAmount(value);
               }
             }}
@@ -59,12 +62,14 @@ export default function BidInput({
 
           <input
             className="w-[7rem] border border-t-0 border-white/20 text-center p-2 bg-v3-bg/20"
-            value={amount > 0 ? amount / currentPrice : ''}
+            value={amount > 0 ? formatDecimal(amount * currentPrice, 3) : ''}
             onChange={(e) => {
-              const value = Number(e.target.value);
-              // NOTE: change this to remaining supply of active account
-              if (value >= 0 && value < maxAmount / currentPrice) {
-                setAmount(value * currentPrice);
+              const stringValue = e.target.value;
+              let value = parseFloat(stringValue) / currentPrice;
+              if (isNaN(value)) {
+                setAmount(0);
+              } else if (value >= 0 && value < maxAmount) {
+                setAmount(value);
               }
             }}
             onKeyDown={(event) => {
@@ -74,7 +79,7 @@ export default function BidInput({
             }}
             type="number"
             min="1"
-            max={maxAmount}
+            max={maxAmount * currentPrice}
           />
         </div>
       </div>

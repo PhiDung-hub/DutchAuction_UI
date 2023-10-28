@@ -11,7 +11,7 @@ import { ETHER_SYMBOL, TOKEN_SYMBOL } from "~/lib/constants";
 import { DUTCH_AUCTION_INTERVAL, MAX_INDIVIDUAL_SUPPLY, TOTAL_AUCTION_SUPPLY } from "~/lib/contracts/constants";
 
 export default function AuctionUI() {
-  const [price, setPrice] = useState(10);
+  const [price, setPrice] = useState(0.022);
   const [priceChange, setPriceChange] = useState(false);
   const [bidValue, setBidValue] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -85,13 +85,13 @@ export default function AuctionUI() {
       <div aria-label="Active price" className="text-center my-4">
         <p className="text-white/80 text-xl mb-2">Current Price</p>
         <p className="text-white/80 text-2xl mb-2 flex gap-4 justify-center">
-          <span className="font-bold">{`1 ${ETHER_SYMBOL}`}</span>
+          <span>
+            {`${TOKEN_SYMBOL}`}
+          </span>
           <SwapIcon width={32} height={32} />
           <span
             className={classNames("text-v3-primary font-bold", { "!text-red-400 animate-pulse": priceChange })}
-          >
-            {`${price > 0n ? price : '?'}${TOKEN_SYMBOL}`}
-          </span>
+          >{`${price > 0n ? price : '...'} ${ETHER_SYMBOL}`}</span>
         </p>
       </div>
 

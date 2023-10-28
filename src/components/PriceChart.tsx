@@ -67,7 +67,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
     // chart layout
     width,
     height,
-    margin = { top: 16, right: -0, bottom: 54, left: 64 },
+    margin = { top: 16, right: 16, bottom: 56, left: 80 },
     // data
     data = demoData,
     title = "Auction Price: 1000 * X",
@@ -199,7 +199,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
             left={margin.left} scale={YScale}
             stroke={strokeColor} tickStroke={strokeColor}
             tickLabelProps={{ fill: labelColor, fontSize: 12 }}
-            labelProps={{ fill: labelColor, fontSize: 16, fontWeight: "bold", x: -margin.top - innerHeight / 2, textAnchor: "middle" }}
+            labelProps={{ fill: labelColor, fontSize: 16, fontWeight: "bold", x: -margin.top - innerHeight / 2, y: -margin.left + 28, textAnchor: "middle" }}
             label={yLabel}
           />
 

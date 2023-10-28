@@ -3,7 +3,7 @@ import {parseAbi } from "viem";
 export const TOTAL_AUCTION_SUPPLY = 1000;
 
 /** Maximum auction token allowance for an individual (~10% supply) */
-export const MAX_INDIVIDUAL_SUPPLY = 100_000;
+export const MAX_INDIVIDUAL_SUPPLY = 1_000;
 
 /** Price change interval of dutch auction in milliseconds */
 export const DUTCH_AUCTION_INTERVAL = 60_000; 
