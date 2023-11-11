@@ -14,6 +14,7 @@ import { AxisLeft, AxisBottom } from '@visx/axis';
 
 import { ETHER_SYMBOL } from '~/lib/constants';
 import { formatDate, formatFloat } from '~/lib/format';
+import { twMerge } from 'tailwind-merge';
 
 
 // NOTE: chart colorr
@@ -52,6 +53,7 @@ export type AreaProps = {
 export type Data = {
   data: TooltipData[];
   title?: string,
+  titleClassName?: string,
   xLabel?: string,
   activeIndex?: number | null,
   yLabel?: string
@@ -66,6 +68,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
     // data
     data,
     title = "Auction Price: 1000 * X",
+    titleClassName = "",
     xLabel = `Block timestamp`,
     yLabel = `Price in ${ETHER_SYMBOL}`,
     activeIndex = null,
@@ -201,7 +204,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
           <text
             x={margin.left + innerWidth / 2} y={margin.top + 32} textAnchor="middle"
             fontFamily="Arial" fontSize={20} fontWeight="600"
-            fill={"rgba(255, 255, 255, 0.8)"}
+            className={twMerge("fill-v3-primary", titleClassName)}
           >
             {title}
           </text>

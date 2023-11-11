@@ -14,9 +14,9 @@ import CloseIcon from '~/icons/wallets/CloseIcon'
 import CoinbaseWalletIcon from '~/icons/wallets/CoinbaseWallet'
 import MetaMaskIcon from '~/icons/wallets/MetaMask'
 import WalletConnectIcon from '~/icons/wallets/WalletConnect'
-import { truncateAddress } from '~/lib/blockchain'
-import { getCurrentBlock } from '~/lib/client'
+import { truncateAddress } from '~/lib/format'
 import { TOKEN_SYMBOL } from '~/lib/constants'
+import { getBalance } from '~/lib/blockchain/token'
 
 const iconMap: {
   [key: string]: ReactElement;
@@ -35,15 +35,15 @@ export function WalletMenu({ closeModal }: { closeModal: Function }) {
   const [tokenBalance, setTokenBalance] = useState<null | number>(null);
 
   useEffect(() => {
-    if (isConnected) {
+    if (address) {
       const fetchBalance = async () => {
         // TODO: change to fetch Tulip balance
-        const balance = await getCurrentBlock();
+        const balance = await getBalance(address);
         setTokenBalance(Number(balance));
       }
       fetchBalance();
     }
-  }, [isConnected]);
+  }, [address]);
 
   if (isConnected) {
     return (
@@ -60,7 +60,7 @@ export function WalletMenu({ closeModal }: { closeModal: Function }) {
             twMerge(
               classNames("text-v3-primary", { tokenBalance: "animate-pulse" })
             )
-          }>{tokenBalance ? tokenBalance : '...'}{TOKEN_SYMBOL}</span>
+          }>{tokenBalance !== null ? tokenBalance : '...'}{TOKEN_SYMBOL}</span>
         </div>
         <button
           onClick={() => disconnect()}

@@ -5,109 +5,268 @@ import { useEffect, useState } from "react"
 import BidInput from "~/components/BidInput";
 import PriceChart from "~/components/PriceChart";
 import Timer from "~/components/Timer";
-import SwapIcon from "~/icons/SwapIcon";
 import { ETHER_SYMBOL, TOKEN_SYMBOL } from "~/lib/constants";
-import { DUTCH_AUCTION_INTERVAL, MAX_INDIVIDUAL_SUPPLY, TOTAL_AUCTION_SUPPLY } from "~/lib/contracts/constants";
+import {
+  readAuctionDuration, bidParams, getAuctionPrice, readAuctionReservePrice,
+  readAuctionStartPrice, readAuctionStartTime, readAuctionTotalsupply,
+  readMaxWeiPerBidder, getUserRemainingAllowance, getRemainingSupply, withdrawParams
+} from "~/lib/blockchain/auction";
+import { useAccount, useContractReads, useContractWrite } from "wagmi";
+import { formatEther, parseEther } from "viem";
+import { formatDecimal } from "~/lib/format";
+
 
 const demoData = [...Array(100).keys()].map((val, idx) => ({
   date: new Date(Date.now() + 12_000 * idx).toISOString(),
-  price: 0.024 - Math.floor(val / 5) * 0.001,
+  price: 0.026 - Math.floor(val / 5) * 0.001,
 }));
 
 export default function AuctionUI() {
-  const [price, setPrice] = useState(0.022);
-  const [priceChange, setPriceChange] = useState(false);
+  const { address } = useAccount();
+  const [price, setPrice] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [bidValue, setBidValue] = useState(0);
+
+  const [priceChange, setPriceChange] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(1200);
-  const [supplyRemaining, setSupplyRemaining] = useState(965);
+
+  const [remainingSupply, setRemainingSupply] = useState<number | null>(null);
+  const [totalSupply, setTotalSupply] = useState<number | null>(null);
+  const [remainingAllowance, setRemainingAllowance] = useState<number | null>(null);
+  const [maxWei, setMaxWei] = useState<number | null>(null);
+
+  const [auctionData, setAuctionData] = useState<null | typeof demoData>(null);
+
+  const constructAuctionData = ({
+    startTime, duration, startPrice, reservePrice
+  }: {
+    startTime: number, duration: number, startPrice: number, reservePrice: number
+  }) => {
+    const blocks = duration * 5;
+    const priceQuantum = (startPrice - reservePrice) / (duration - 1);
+    return [...Array(blocks).keys()].map((block) => ({
+      date: new Date(startTime * 1_000 + 12_000 * block).toISOString(),
+      price: startPrice - Math.floor(block / 5) * priceQuantum,
+    }))
+  }
+
+  const { data: auctionStates } = useContractReads({
+    contracts: [
+      // @ts-ignore
+      readAuctionStartTime,
+      // @ts-ignore
+      readAuctionDuration,
+      // @ts-ignore
+      readAuctionStartPrice,
+      // @ts-ignore
+      readAuctionReservePrice,
+      // @ts-ignore
+      readAuctionTotalsupply,
+      // @ts-ignore
+      readMaxWeiPerBidder,
+    ]
+  });
+
+  const { write: writeBid, error: bidError } = useContractWrite(bidParams({ amount: parseEther((bidValue * price).toString(), 'wei') }));
+  const callBid = () => {
+    if (bidValue == 0) {
+      alert('0 amount!');
+      return;
+    }
+    writeBid();
+    if (bidError) {
+      alert("Transaction reverted! Please check console");
+      console.log(bidError);
+    }
+  }
+
+  const { write: writeWithdraw, error: withdrawError } = useContractWrite(withdrawParams);
+  const callWithdraw = () => {
+    writeWithdraw();
+    if (withdrawError) {
+      alert("Transaction reverted! Please check console");
+      console.log();
+    }
+  }
 
   // NOTE: on price change, update UI & value.
   useEffect(() => {
-    /** Fetch TULIP price from the auction contract */
-    const updatePrice = async (notifyUI = true) => {
+    const updatePrice = async () => {
       const previousPrice = price;
-      const currentPrice = price;
-      // const currentPrice = await getAuctionPrice();
-      // setPrice(currentPrice);
+      const currentPrice = Number(formatEther(await getAuctionPrice()));
+      setPrice(currentPrice);
 
-      if (notifyUI) {
-        // TODO: change this to find the exact index
-        setActiveIndex(index => index + 1);
-      }
-
-      if (previousPrice != currentPrice && notifyUI) {
+      if (previousPrice != currentPrice) {
         setPriceChange(true);
-        setTimeout(() => setPriceChange(false), 20_000); // blink the UI for 10s
+        setTimeout(() => setPriceChange(false), 5_000); // blink the UI for 5s
       }
     };
+    updatePrice();
 
-    // NOTE: Handle URL navigation
-    updatePrice(false);
+    const updateHandler = setInterval(() => {
+      updatePrice();
+      setActiveIndex(index => index + 1);
+    }, 12_000);
 
-
-    // NOTE: interval for demo movement only
-    const updateHandler = setInterval(updatePrice, DUTCH_AUCTION_INTERVAL / 5);
     return () => clearInterval(updateHandler);
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    if (address) {
+      const fetchAllowance = async () => {
+        const remainingAllowance = formatDecimal(Number(formatEther(await getUserRemainingAllowance(address))), 3);
+        setRemainingAllowance(Number(remainingAllowance));
+      };
+      fetchAllowance();
+    }
+  }, [address]);
+
+  useEffect(() => {
+    const getInitialState = async () => {
+      if (auctionStates) {
+        const [_startTime, _duration, _startPrice, _reservePrice, _totalSupply, _maxWeiPerBidder] = [
+          auctionStates[0].result,
+          auctionStates[1].result,
+          auctionStates[2].result,
+          auctionStates[3].result,
+          auctionStates[4].result,
+          auctionStates[5].result,
+        ];
+        const startTime = Number(_startTime);
+        const duration = Number(_duration);
+        const startPrice = Number(formatEther(_startPrice as bigint));
+        const reservePrice = Number(formatEther(_reservePrice as bigint));
+
+        const totalSupply = Number(formatEther(_totalSupply as bigint));
+        setTotalSupply(totalSupply);
+
+        const remainingSupply = Number(formatDecimal(Number(formatEther(await getRemainingSupply() ?? 0n)), 3));
+        setRemainingSupply(remainingSupply);
+
+        const maxWei = Number(formatEther(_maxWeiPerBidder as bigint));
+        setMaxWei(maxWei);
+
+        const auctionData = constructAuctionData({ startTime, duration, startPrice, reservePrice });
+        setAuctionData(auctionData);
+
+        if (startTime != 0) {
+          const timeRemaining = Math.ceil(startTime + duration * 60 - Date.now() / 1000);
+          setTimeRemaining(timeRemaining > 0 ? timeRemaining : 0);
+        }
+
+        const activeIndex = Math.floor((Date.now() / 1000 - startTime) / 12);
+        setActiveIndex(activeIndex);
+      }
+    }
+
+    getInitialState();
+  }, [auctionStates])
 
   return (
     <>
       <div className="pl-12 my-8 flex justify-center">
-        <div className="w-[640px]">
-          <PriceChart
-            width={800}
-            height={480}
-            data={demoData}
-            activeIndex={activeIndex}
-            title={`Auction Price - ${TOKEN_SYMBOL} / ${ETHER_SYMBOL}`}
-            xLabel="Time"
-            yLabel={`${TOKEN_SYMBOL} Price`}
+        <div className="w-[40rem]">
+          {auctionData?.length ? (
+            <PriceChart
+              width={800}
+              height={480}
+              data={auctionData}
+              activeIndex={activeIndex}
+              title={`${price} ${ETHER_SYMBOL} ⇌ 1${TOKEN_SYMBOL}`}
+              titleClassName={classNames('', { 'animate-pulse fill-red-300': priceChange })}
+              xLabel="Time"
+              yLabel={`${TOKEN_SYMBOL} Price`}
+            />
+          ) : (
+            <div className="flex items-center justify-center w-[40rem] h-[30rem] animate-pulse text-4xl">
+              ...
+            </div>
+          )}
+        </div>
+
+        {!!timeRemaining && (
+          <div aria-label="Auction stats" className="flex w-[6rem]">
+            <Timer duration={timeRemaining} />
+          </div>
+        )}
+        {timeRemaining === 0 && (
+          <div className="text-yellow-300 font-bold">
+            AUCTION EXPIRED
+          </div>
+        )}
+        {timeRemaining === null && (
+          <div className="text-red-300 font-bold">
+            NO AUCTION
+          </div>
+        )}
+      </div>
+
+
+      {!!timeRemaining && (
+        <>
+          <BidInput
+            amount={bidValue}
+            setAmount={setBidValue}
+            maxAmount={100}
+            currentPrice={price}
+            ariaLabel="Bid Input"
+            buttonLabel="BID"
+            onBid={callBid}
           />
-        </div>
-        <div aria-label="Auction stats" className="flex w-[100px]">
-          <Timer duration={timeRemaining} />
-        </div>
-      </div>
 
-      <BidInput
-        amount={bidValue}
-        setAmount={setBidValue}
-        maxAmount={MAX_INDIVIDUAL_SUPPLY}
-        currentPrice={price}
-        ariaLabel="Bid Input"
-        buttonLabel="BID"
-      />
+          <div className="flex gap-16 justify-center my-8">
+            <div aria-label="supply-remaining" className="text-center">
+              <div className="mb-2 text-xl text-white/80">
+                Auction Remaining
+              </div>
+              <div className="text-2xl font-bold">
+                <span className="text-v3-primary/80">
+                  {`${remainingSupply}${TOKEN_SYMBOL}`}
+                </span>
+                <span className="text-white/50">
+                  {` [${(totalSupply && remainingSupply) ? (100 * remainingSupply / totalSupply).toFixed(1) : "..."}%]`}
+                </span>
+              </div>
+            </div>
 
-      <div className="flex gap-16 justify-center my-8">
-        <div aria-label="supply-remaining" className="text-center">
-          <div className="mb-2 text-xl text-white/80">
-            Remaining
+            <div aria-label="supply-remaining" className="text-center">
+              <div className="mb-2 text-xl text-white/80">
+                Your Remaining
+              </div>
+              <div className="text-2xl font-bold">
+                <span className="text-v3-primary/80">
+                  {`${remainingAllowance} ${ETHER_SYMBOL}`}
+                </span>
+                <span className="text-white/50">
+                  {` [${(maxWei && remainingAllowance) ? (100 * remainingAllowance / maxWei).toFixed(1) : "..."}%]`}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="text-2xl">
-            <span className="text-v3-primary">
-              {`${supplyRemaining}${TOKEN_SYMBOL}`}
-            </span>
-            <span className="text-white/50">
-              {` [${(100 * supplyRemaining / TOTAL_AUCTION_SUPPLY).toFixed(1)}%]`}
-            </span>
+        </>
+      )}
+
+      {timeRemaining === 0 && (
+        <div className="flex flex-col items-center">
+          <div className="text-3xl text-center">
+            Auction has not been settled :(
           </div>
-        </div>
-
-        <div aria-label="active-price" className="text-center">
-          <p className="text-white/80 text-xl mb-2">Current Price</p>
-          <p className="text-2xl mb-2 flex gap-2 justify-center">
-            <span>
-              {`${TOKEN_SYMBOL}`}
+          <button
+            className="my-4 group w-[17rem] p-4 border border-white/20 rounded-md bg-v3-bg/50"
+            onClick={callWithdraw}
+          >
+            <span className="text-3xl font-bold text-yellow-300/50 group-hover:animate-none group-hover:text-yellow-300">
+              Withdraw
             </span>
-            <SwapIcon width={24} height={32} />
-            <span
-              className={classNames("text-v3-primary font-bold", { "!text-red-400 animate-pulse": priceChange })}
-            >{`${price > 0n ? price : '...'} ${ETHER_SYMBOL}`}</span>
-          </p>
+          </button>
         </div>
-      </div>
+      )}
 
+      {timeRemaining === null && (
+        <div className="text-4xl text-center">
+          Stay tune for upcoming auction!
+        </div>
+      )}
     </>
   )
 }

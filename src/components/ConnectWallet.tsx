@@ -1,9 +1,9 @@
 import Modal from 'react-modal';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { WalletMenu } from '~/views/wallets';
 import { useAccount } from 'wagmi';
 
-import { truncateAddress } from '~/lib/blockchain';
+import { truncateAddress } from '~/lib/format';
 
 const customStyles = {
   overlay: {
@@ -45,8 +45,8 @@ export default function ConnectWallet() {
   return (
     <div className='group bg-gray-800/50'>
       {/* NOTE: padding is adjusted based on text size (height = 28px) and scroll size (8px) */}
-      <button className='text-lg text-white/60 group-hover:text-white pl-4 pr-6 py-4 font-bold' onClick={openModal}>
-        {isConnected ? truncateAddress(address!) : 'Connect Wallet'}
+      <button className="text-lg text-white/60 group-hover:text-white pl-4 pr-6 py-4 font-bold" onClick={openModal}>
+        {address ? truncateAddress(address) : 'Connect Wallet'}
       </button>
       <Modal
         isOpen={modalIsOpen}
@@ -55,7 +55,7 @@ export default function ConnectWallet() {
         style={customStyles}
         contentLabel="Wallet Modal"
       >
-        <WalletMenu closeModal={closeModal}/>
+        <WalletMenu closeModal={closeModal} />
       </Modal>
     </div>
   )

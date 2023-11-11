@@ -4,7 +4,6 @@ import Link from 'next/link';
 import classNames from 'classnames';
 import SwapIcon from '~/icons/SwapIcon';
 import RepoLogo from '~/icons/RepoLogo';
-import WalletIcon from '~/icons/WalletIcon';
 
 import { usePathname } from 'next/navigation';
 

@@ -10,13 +10,14 @@ export type InputProps = {
   maxAmount: number;
   buttonLabel: string;
   className?: string;
-  ariaLabel?: string
+  ariaLabel?: string;
+  onBid: Function;
 }
 
 export default function BidInput({
   amount, setAmount, maxAmount, currentPrice,
   buttonLabel, className,
-  ariaLabel
+  ariaLabel, onBid,
 }: InputProps) {
   return (
     <div aria-label={ariaLabel ?? "Price input"}>
@@ -29,7 +30,7 @@ export default function BidInput({
           </span>
           <input
             className="w-[7rem] border border-white/20 text-center rounded-tr-md p-2 bg-transparent"
-            value={amount > 0 ? formatDecimal(amount, 1) : ''}
+            value={amount >= 0 ? formatDecimal(amount, 2) : ''}
             onChange={(e) => {
               const stringValue = e.target.value;
               let value = parseFloat(stringValue);
@@ -45,7 +46,7 @@ export default function BidInput({
               }
             }}
             type="number"
-            min="1"
+            min="0"
             max={maxAmount}
           />
         </div>
@@ -62,7 +63,7 @@ export default function BidInput({
 
           <input
             className="w-[7rem] border border-t-0 border-white/20 text-center p-2 bg-v3-bg/20"
-            value={amount > 0 ? formatDecimal(amount * currentPrice, 3) : ''}
+            value={amount >= 0 ? formatDecimal(amount * currentPrice, 4) : ''}
             onChange={(e) => {
               const stringValue = e.target.value;
               let value = parseFloat(stringValue) / currentPrice;
@@ -78,20 +79,20 @@ export default function BidInput({
               }
             }}
             type="number"
-            min="1"
+            min="0"
             max={maxAmount * currentPrice}
           />
         </div>
       </div>
 
-      <div className="group flex justify-center">
+      <div className="flex justify-center">
         <button
-          className="w-[17rem] p-4 border border-t-0 border-white/20 
+          className="group w-[17rem] p-4 border border-t-0 border-white/20 
           rounded-b-md bg-v3-bg/50"
-          onClick={() => alert("Bid")}
+          onClick={() => onBid()}
         >
           <span className={twMerge(
-            "text-3xl font-bold text-v3-primary group-hover:animate-pulse",
+            "text-3xl font-bold text-white/80 animate-pulse group-hover:animate-none group-hover:text-white",
             className ?? "",
           )}>
             {buttonLabel}

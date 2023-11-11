@@ -1,7 +1,25 @@
-import type { Metadata } from 'next'
+"use client";
+
+import { useAccount } from 'wagmi';
 import BidEntry from '~/components/BidEntry';
+import { useState, useEffect } from "react";
+import { Bid, collectBids } from '~/lib/blockchain/watch';
 
 export default function Info() {
+  const { address } = useAccount();
+  const [bids, setBids] = useState<Bid[] | any[]>([]);
+
+  // fetch bids
+  useEffect(() => {
+    if (address) {
+      const getBid = async () => {
+        const myBids = (await collectBids({})).filter(bid => bid.bidder === address?.toLowerCase());
+        setBids(myBids);
+      }
+      getBid();
+    }
+  }, []);
+
   return (
     <div className="flex flex-col items-center">
       <div className="text-center text-4xl">
@@ -9,16 +27,8 @@ export default function Info() {
       </div>
 
       <div className="max-w-5xl bg-black/25 max-h-[60vh] overflow-y-scroll w-full my-12 rounded-xl">
-        <BidEntry amount={500} bidPrice={20} status="ACCEPTED" bidTime={new Date()} />
-        <BidEntry amount={500} bidPrice={15} status="PENDING" bidTime={new Date(Date.now() - 500_000)} />
-        <BidEntry amount={200} bidPrice={10} status="PENDING" bidTime={new Date()} />
-        <BidEntry amount={500} bidPrice={10} status="FAILED" bidTime={new Date()} />
+        {bids.map(({amount, block, txHash}) => <BidEntry amount={amount} bidHash={txHash} status="FILLED" block={block} />)}
       </div>
     </div>
   );
-}
-
-export const metadata: Metadata = {
-  title: 'Info - Dutch Auction',
-  description: 'Past auctions info / aggregated protocol stats',
 }

@@ -2,23 +2,24 @@
 
 import SexyText from "~/components/SexyText";
 import { useEffect, useState } from 'react';
-import { getCurrentBlock } from "~/lib/client";
+import { getCurrentBlock } from "~/lib/blockchain/core";
 import AuctionUI from "~/views/auction";
 import Link from "next/link";
+import { EXPLORER_URL } from "~/lib/blockchain/constants";
 
 export default function Home() {
-  const [block, setBlock] = useState(0n)
+  const [block, setBlock] = useState(0n);
 
-  // NOTE: DEMO USAGE of viem client: fetch block status
+  // Update current block number.
   useEffect(() => {
-    const fetcher = async () => {
+    const fetchBlock = async () => {
       await getCurrentBlock().then((currentBlock) => setBlock(currentBlock));
     };
-    fetcher();
-    const fetchInterval = setInterval(fetcher, 12_000);
+    fetchBlock();
+    const fetchInterval = setInterval(fetchBlock, 12_000);
 
     return () => clearInterval(fetchInterval);
-  }, [])
+  }, []);
 
   return (
     <>
@@ -29,17 +30,15 @@ export default function Home() {
             <AuctionUI />
           </div>
 
-          <div className="flex justify-between items-center group w-full text-right p-4">
-            <button className="group p-2 border rounded-md border-white/20 bg-v3-bg/80">
-              <Link className="text-center text-xl hover:text-v3-primary/80" href="/info">
-                My Bids 🔗
-              </Link>
-            </button>
+          <div className="flex justify-between items-center w-full text-right p-4">
+            <Link className="text-center text-xl hover:text-v3-primary/80" href="/info">
+              My Bids 🔗
+            </Link>
             <a
-              className="text-green-400 group-hover:animate-pulse"
+              className="text-green-400 hover:animate-pulse"
               rel="noreferrer noopener"
               target="_blank"
-              href={`https://etherscan.io/block/${block.toString()}`}
+              href={`${EXPLORER_URL}/block/${block.toString()}`}
             >
               {`⬤ ${block === 0n ? '...' : block}`}
             </a>
@@ -58,15 +57,14 @@ function CoolIntro() {
         <SexyText className="text-4xl font-semibold px-0 pb-2">
           Dutch Auction
         </SexyText>
-
         <div className="text-black px-1 py-0.5 bg-v3-primary rounded-md ml-2.5 font-semibold flex text-md self-start">
           v1
         </div>
       </div>
+
       <div className="text-[#9D9DA6] max-w-[60vw] text-md mt-4 heading-[24px]">
         Short Description
       </div>
     </div>
   )
 }
-

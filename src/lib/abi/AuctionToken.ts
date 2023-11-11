@@ -1,4 +1,13 @@
-export const Token_ABI = [
+// import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+//
+// interface IAuctionableToken is IERC20 {
+//     event OperatorMint(uint256 amount);
+//
+//     function operatorMint(uint256 amount) external;
+//
+//     function burn(uint256 value) external;
+// }
+export const AuctionTokenABI = [
   {
     "inputs": [
       {
@@ -104,6 +113,22 @@ export const Token_ABI = [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MintLimitExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "owner",
         "type": "address"
@@ -146,6 +171,19 @@ export const Token_ABI = [
       }
     ],
     "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "OperatorMint",
     "type": "event"
   },
   {
@@ -263,7 +301,7 @@ export const Token_ABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "value",
+        "name": "_value",
         "type": "uint256"
       }
     ],
@@ -330,36 +368,10 @@ export const Token_ABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "operator",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "operatorBurn",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
