@@ -14,9 +14,10 @@ import CloseIcon from '~/icons/wallets/CloseIcon'
 import CoinbaseWalletIcon from '~/icons/wallets/CoinbaseWallet'
 import MetaMaskIcon from '~/icons/wallets/MetaMask'
 import WalletConnectIcon from '~/icons/wallets/WalletConnect'
-import { truncateAddress } from '~/lib/format'
+import { formatDecimal, truncateAddress } from '~/lib/format'
 import { TOKEN_SYMBOL } from '~/lib/constants'
 import { getBalance } from '~/lib/blockchain/token'
+import { formatEther } from 'viem'
 
 const iconMap: {
   [key: string]: ReactElement;
@@ -32,14 +33,14 @@ export function WalletMenu({ closeModal }: { closeModal: Function }) {
   const { data: ensName } = useEnsName({ address })
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
   const { disconnect } = useDisconnect()
-  const [tokenBalance, setTokenBalance] = useState<null | number>(null);
+  const [tokenBalance, setTokenBalance] = useState<null | bigint>(null);
 
   useEffect(() => {
     if (address) {
       const fetchBalance = async () => {
         // TODO: change to fetch Tulip balance
         const balance = await getBalance(address);
-        setTokenBalance(Number(balance));
+        setTokenBalance(balance);
       }
       fetchBalance();
     }
@@ -60,7 +61,7 @@ export function WalletMenu({ closeModal }: { closeModal: Function }) {
             twMerge(
               classNames("text-v3-primary", { tokenBalance: "animate-pulse" })
             )
-          }>{tokenBalance !== null ? tokenBalance : '...'}{TOKEN_SYMBOL}</span>
+          }>{tokenBalance !== null ? formatDecimal(Number(formatEther(tokenBalance)), 2) : '...'}{TOKEN_SYMBOL}</span>
         </div>
         <button
           onClick={() => disconnect()}

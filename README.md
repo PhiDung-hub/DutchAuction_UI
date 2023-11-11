@@ -1,36 +1,56 @@
+# Dutch Auction frontend
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+This repo contains code for integrating with DutchAucion and TulipToken contracts, which were 
+developed in a separate repo and deployed on Sepolia testnet.
+
+Basic functionalities include bid, withdraw, and some basic monitor functionalities
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Run development server
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+(Optional) To build & start for production-like performance:
 
-## Learn More
+```bash
+pnpm build && pnpm start
+```
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Repo structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+This is a standard [Next 13 app](https://nextjs.org/docs) using `app` directory.
+All core logic is defined with `src/` folder
 
-## Deploy on Vercel
+### src/app
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Contains app layout and router description
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### src/components
+
+UI components like Price Chart, Bid Input, Button etc..
+
+### src/context
+
+[wagmi.sh](https://wagmi.sh) context provider that set up wallet hooks within the application
+
+### src/lib
+
+Helper logics, `blockchain` and `abi` contains contracts interface details
+
+### src/views
+
+UI views, most important one is auction view defined in `src/views/auction.tsx`
+
+

@@ -13,7 +13,7 @@ import { max, extent, bisector, min } from '@visx/vendor/d3-array';
 import { AxisLeft, AxisBottom } from '@visx/axis';
 
 import { ETHER_SYMBOL } from '~/lib/constants';
-import { formatDate, formatFloat } from '~/lib/format';
+import { formatDate, formatDecimal } from '~/lib/format';
 import { twMerge } from 'tailwind-merge';
 
 
@@ -271,7 +271,7 @@ export default withTooltip<AreaProps & Data, TooltipData>(
               left={tooltipLeft - 80}
               style={tooltipStyles}
             >
-              {`${formatFloat(getY(tooltipData))} ${ETHER_SYMBOL}`}
+              {`${formatDecimal(getY(tooltipData), 4)} ${ETHER_SYMBOL}`}
             </TooltipWithBounds>
             <Tooltip
               top={innerHeight + margin.top - 14}

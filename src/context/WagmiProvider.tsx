@@ -8,12 +8,10 @@ import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
 import React from 'react'
 
 import { alchemyProvider } from 'wagmi/providers/alchemy'
-import { publicProvider } from 'wagmi/providers/public';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [sepolia],
-  // [alchemyProvider({ apiKey: process.env.ALCHEMY_API_KEY! })],
-  [publicProvider()],
+  [alchemyProvider({ apiKey: "FfwzUn4LvtocQZt5Nlnx7wIMF1dnbjnM" })],
 );
 
 // Set up wagmi config

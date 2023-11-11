@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast';
 import './globals.css'
 import type { Metadata } from 'next'
 
@@ -34,6 +35,10 @@ export default function RootLayout({
           <Footer />
         </body>
       </WagmiProvider>
+      <Toaster toastOptions={{
+        error: {
+        },
+      }} />
     </html>
   )
 }

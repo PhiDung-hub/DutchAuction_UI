@@ -14,6 +14,7 @@ export default function Info() {
     if (address) {
       const getBid = async () => {
         const myBids = (await collectBids({})).filter(bid => bid.bidder === address?.toLowerCase());
+        myBids.sort((b1, b2) => Number(b2.block) - Number(b1.block));
         setBids(myBids);
       }
       getBid();

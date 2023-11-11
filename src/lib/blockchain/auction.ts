@@ -8,6 +8,24 @@ export const DutchAuction = {
   abi: DutchAuctionABI,
 };
 
+export async function auctionIsStarted() {
+  return read_client
+    .readContract({
+      ...DutchAuction,
+      functionName: "auctionIsStarted",
+      args: [],
+    }).then(r => r as boolean);
+}
+
+export async function getIsAuctioning() {
+  return read_client
+    .readContract({
+      ...DutchAuction,
+      functionName: "isAuctioning",
+      args: [],
+    }).then(r => r as boolean);
+}
+
 
 export async function getAuctionPrice() {
   return read_client
@@ -106,4 +124,5 @@ export function bidParams({ amount }: { amount: bigint }) {
 export const withdrawParams = {
   ...DutchAuction,
   functionName: "withdraw",
+  args: [],
 }

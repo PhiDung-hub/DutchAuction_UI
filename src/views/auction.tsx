@@ -9,11 +9,12 @@ import { ETHER_SYMBOL, TOKEN_SYMBOL } from "~/lib/constants";
 import {
   readAuctionDuration, bidParams, getAuctionPrice, readAuctionReservePrice,
   readAuctionStartPrice, readAuctionStartTime, readAuctionTotalsupply,
-  readMaxWeiPerBidder, getUserRemainingAllowance, getRemainingSupply, withdrawParams
+  readMaxWeiPerBidder, getUserRemainingAllowance, getRemainingSupply, withdrawParams, auctionIsStarted, getIsAuctioning
 } from "~/lib/blockchain/auction";
-import { useAccount, useContractReads, useContractWrite } from "wagmi";
+import { useAccount, useContractReads, useContractWrite, usePrepareContractWrite } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { formatDecimal } from "~/lib/format";
+import toast from "react-hot-toast";
 
 
 const demoData = [...Array(100).keys()].map((val, idx) => ({
@@ -31,6 +32,7 @@ export default function AuctionUI() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const [remainingSupply, setRemainingSupply] = useState<number | null>(null);
+  const [auctionActive, setAuctionActive] = useState<boolean | null>(null);
   const [totalSupply, setTotalSupply] = useState<number | null>(null);
   const [remainingAllowance, setRemainingAllowance] = useState<number | null>(null);
   const [maxWei, setMaxWei] = useState<number | null>(null);
@@ -67,27 +69,55 @@ export default function AuctionUI() {
     ]
   });
 
-  const { write: writeBid, error: bidError } = useContractWrite(bidParams({ amount: parseEther((bidValue * price).toString(), 'wei') }));
+  const fetchAllowance = async (address: `0x${string}`) => {
+    const remainingAllowance = formatDecimal(Number(formatEther(await getUserRemainingAllowance(address))), 3);
+    setRemainingAllowance(Number(remainingAllowance));
+  };
+  const { config: bidConfig, error: bidError } = usePrepareContractWrite(bidParams({ amount: parseEther((bidValue * price).toString(), 'wei') }));
+  const { write: writeBid, isSuccess: bidSuccess } = useContractWrite(bidConfig);
   const callBid = () => {
     if (bidValue == 0) {
-      alert('0 amount!');
+      toast.error("0 bid amount");
+      return;
+    }
+    if (!writeBid) {
+      toast.error("Bid error!", { position: 'top-right' });
       return;
     }
     writeBid();
     if (bidError) {
-      alert("Transaction reverted! Please check console");
+      toast.error("Bid call Revert", { position: 'top-right' });
       console.log(bidError);
     }
   }
 
-  const { write: writeWithdraw, error: withdrawError } = useContractWrite(withdrawParams);
+  useEffect(() => {
+    if (bidSuccess) {
+      toast.success("Bid submitted!", { position: "top-right" })
+      fetchAllowance(address!);
+    }
+  }, [bidSuccess]);
+
+  const { config: withdrawConfig, error: withdrawError } = usePrepareContractWrite(withdrawParams);
+  const { write: writeWithdraw, isSuccess: withdrawSuccess } = useContractWrite(withdrawConfig);
   const callWithdraw = () => {
+    if (!writeWithdraw) {
+      toast.error("Not eligible!", { position: 'top-right' });
+      return;
+    }
     writeWithdraw();
     if (withdrawError) {
-      alert("Transaction reverted! Please check console");
-      console.log();
+      toast.error("Withdraw call Revert", { position: 'top-right' });
+      console.log(withdrawError);
     }
   }
+
+  useEffect(() => {
+    if (withdrawSuccess) {
+      toast.success("Withdraw submitted!", { position: "top-right" })
+    }
+  }, [withdrawSuccess]);
+
 
   // NOTE: on price change, update UI & value.
   useEffect(() => {
@@ -113,13 +143,24 @@ export default function AuctionUI() {
 
   useEffect(() => {
     if (address) {
-      const fetchAllowance = async () => {
-        const remainingAllowance = formatDecimal(Number(formatEther(await getUserRemainingAllowance(address))), 3);
-        setRemainingAllowance(Number(remainingAllowance));
-      };
-      fetchAllowance();
+      fetchAllowance(address);
     }
   }, [address]);
+
+  const [isAuctioning, setIsAuctioning] = useState<boolean>(false);
+
+
+  useEffect(() => {
+    const updateRemainingSupply = async () => {
+      const remainingSupply = Number(formatDecimal(Number(formatEther(await getRemainingSupply() ?? 0n)), 3));
+      setRemainingSupply(remainingSupply);
+
+      const isAuctioning = await getIsAuctioning();
+      setIsAuctioning(isAuctioning);
+    }
+    updateRemainingSupply();
+  }, [])
+
 
   useEffect(() => {
     const getInitialState = async () => {
@@ -140,16 +181,16 @@ export default function AuctionUI() {
         const totalSupply = Number(formatEther(_totalSupply as bigint));
         setTotalSupply(totalSupply);
 
-        const remainingSupply = Number(formatDecimal(Number(formatEther(await getRemainingSupply() ?? 0n)), 3));
-        setRemainingSupply(remainingSupply);
-
         const maxWei = Number(formatEther(_maxWeiPerBidder as bigint));
         setMaxWei(maxWei);
 
         const auctionData = constructAuctionData({ startTime, duration, startPrice, reservePrice });
         setAuctionData(auctionData);
 
-        if (startTime != 0) {
+        const isAuctionStarted = await auctionIsStarted();
+        setAuctionActive(isAuctionStarted);
+
+        if (isAuctionStarted) {
           const timeRemaining = Math.ceil(startTime + duration * 60 - Date.now() / 1000);
           setTimeRemaining(timeRemaining > 0 ? timeRemaining : 0);
         }
@@ -166,13 +207,13 @@ export default function AuctionUI() {
     <>
       <div className="pl-12 my-8 flex justify-center">
         <div className="w-[40rem]">
-          {auctionData?.length ? (
+          {auctionActive && auctionData?.length ? (
             <PriceChart
               width={800}
               height={480}
               data={auctionData}
               activeIndex={activeIndex}
-              title={`${price} ${ETHER_SYMBOL} ⇌ 1${TOKEN_SYMBOL}`}
+              title={`${formatDecimal(price, 4)} ${ETHER_SYMBOL} ⇌ 1${TOKEN_SYMBOL}`}
               titleClassName={classNames('', { 'animate-pulse fill-red-300': priceChange })}
               xLabel="Time"
               yLabel={`${TOKEN_SYMBOL} Price`}
@@ -184,12 +225,12 @@ export default function AuctionUI() {
           )}
         </div>
 
-        {!!timeRemaining && (
+        {!!timeRemaining && isAuctioning && (
           <div aria-label="Auction stats" className="flex w-[6rem]">
             <Timer duration={timeRemaining} />
           </div>
         )}
-        {timeRemaining === 0 && (
+        {(!isAuctioning && timeRemaining !== null) && (
           <div className="text-yellow-300 font-bold">
             AUCTION EXPIRED
           </div>
@@ -202,7 +243,7 @@ export default function AuctionUI() {
       </div>
 
 
-      {!!timeRemaining && (
+      {(isAuctioning && !!timeRemaining) && (
         <>
           <BidInput
             amount={bidValue}
@@ -217,7 +258,7 @@ export default function AuctionUI() {
           <div className="flex gap-16 justify-center my-8">
             <div aria-label="supply-remaining" className="text-center">
               <div className="mb-2 text-xl text-white/80">
-                Auction Remaining
+                Auction Token Remaining
               </div>
               <div className="text-2xl font-bold">
                 <span className="text-v3-primary/80">
@@ -231,7 +272,7 @@ export default function AuctionUI() {
 
             <div aria-label="supply-remaining" className="text-center">
               <div className="mb-2 text-xl text-white/80">
-                Your Remaining
+                Bid Limit Remaining
               </div>
               <div className="text-2xl font-bold">
                 <span className="text-v3-primary/80">
@@ -246,7 +287,7 @@ export default function AuctionUI() {
         </>
       )}
 
-      {timeRemaining === 0 && (
+      {(!isAuctioning && timeRemaining !== null) && (
         <div className="flex flex-col items-center">
           <div className="text-3xl text-center">
             Auction has not been settled :(
@@ -255,10 +296,17 @@ export default function AuctionUI() {
             className="my-4 group w-[17rem] p-4 border border-white/20 rounded-md bg-v3-bg/50"
             onClick={callWithdraw}
           >
-            <span className="text-3xl font-bold text-yellow-300/50 group-hover:animate-none group-hover:text-yellow-300">
+            <span className="text-2xl font-bold text-yellow-300/50 group-hover:animate-none group-hover:text-yellow-300">
               Withdraw
             </span>
           </button>
+
+          <span className="text-2xl">
+            {"Your commited amount: "}
+            <span className="text-v3-primary font-bold">
+              {`${(maxWei && remainingAllowance) ? formatDecimal(maxWei - remainingAllowance, 4) : "..."} ${ETHER_SYMBOL}`}
+            </span>
+          </span>
         </div>
       )}
 

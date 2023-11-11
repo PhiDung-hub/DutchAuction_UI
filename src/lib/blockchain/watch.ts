@@ -6,7 +6,7 @@ import { formatDecimal } from "../format";
 
 export async function collectBids({
   // contract genesis, no evt prior to this
-  fromBlock = 4668800n,
+  fromBlock = 4671900n,
   toBlock = undefined
 }: { fromBlock?: bigint, toBlock?: bigint }) {
   const logs = await read_client.getLogs({
@@ -24,8 +24,8 @@ export async function collectBids({
 export type Bid = {
   idder: string,
   amount: string,
-  block: bigint | null,
-  txHash: `0x${string}` | null
+  block: bigint,
+  txHash: `0x${string}`
 }
 
 export function decodeBidEvent(log: Log) {
@@ -39,8 +39,8 @@ export function decodeBidEvent(log: Log) {
   return {
     bidder: bytes32ToAddress(arg0)!, // number, very unlikely to overflow
     amount: formatDecimal(Number(formatEther(bytes32ToBigint(arg1))), 3), // collection
-    block: blockNumber,
-    txHash: transactionHash,
+    block: blockNumber!,
+    txHash: transactionHash!,
   }
 }
 

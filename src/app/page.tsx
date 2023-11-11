@@ -6,6 +6,7 @@ import { getCurrentBlock } from "~/lib/blockchain/core";
 import AuctionUI from "~/views/auction";
 import Link from "next/link";
 import { EXPLORER_URL } from "~/lib/blockchain/constants";
+import { TOKEN_SYMBOL } from "~/lib/constants";
 
 export default function Home() {
   const [block, setBlock] = useState(0n);
@@ -63,7 +64,7 @@ function CoolIntro() {
       </div>
 
       <div className="text-[#9D9DA6] max-w-[60vw] text-md mt-4 heading-[24px]">
-        Short Description
+        Demo Dutch Auction for Tulip Token [{TOKEN_SYMBOL}]
       </div>
     </div>
   )

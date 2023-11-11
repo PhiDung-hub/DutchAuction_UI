@@ -1,4 +1,4 @@
-import { ETHER_SYMBOL } from "~/lib/constants";
+import { ETHER_SYMBOL, TOKEN_SYMBOL } from "~/lib/constants";
 import { SetStateAction } from "react";
 import { twMerge } from "tailwind-merge";
 import { formatDecimal } from "~/lib/format";
@@ -26,7 +26,7 @@ export default function BidInput({
           <span
             className="w-[10rem] border border-r-0 border-white/20 rounded-tl-md p-2 bg-v3-bg"
           >
-            Amount
+            Amount {TOKEN_SYMBOL}
           </span>
           <input
             className="w-[7rem] border border-white/20 text-center rounded-tr-md p-2 bg-transparent"
@@ -36,7 +36,7 @@ export default function BidInput({
               let value = parseFloat(stringValue);
               if (isNaN(value)) {
                 setAmount(0);
-              } else if (value >= 0 && value < maxAmount) {
+              } else if (value >= 0) {
                 setAmount(value);
               }
             }}
@@ -47,7 +47,6 @@ export default function BidInput({
             }}
             type="number"
             min="0"
-            max={maxAmount}
           />
         </div>
 
@@ -58,7 +57,7 @@ export default function BidInput({
           <span
             className="w-[10rem] border border-r-0 border-t-0 border-white/20 p-2 bg-v3-bg"
           >
-            Price ({ETHER_SYMBOL})
+            {ETHER_SYMBOL}
           </span>
 
           <input
@@ -69,7 +68,7 @@ export default function BidInput({
               let value = parseFloat(stringValue) / currentPrice;
               if (isNaN(value)) {
                 setAmount(0);
-              } else if (value >= 0 && value < maxAmount) {
+              } else if (value >= 0) {
                 setAmount(value);
               }
             }}
@@ -80,7 +79,6 @@ export default function BidInput({
             }}
             type="number"
             min="0"
-            max={maxAmount * currentPrice}
           />
         </div>
       </div>
