@@ -8,6 +8,7 @@ import {
   useConnect,
   useDisconnect,
   useEnsName,
+  useNetwork,
 } from 'wagmi'
 import CloseIcon from '~/icons/wallets/CloseIcon'
 

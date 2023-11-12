@@ -33,7 +33,7 @@ const customStyles = {
 
 export default function ConnectWallet() {
   const [modalIsOpen, setIsOpen] = React.useState(false);
-  const { address, isConnected } = useAccount()
+  const { address } = useAccount()
 
   function openModal() {
     setIsOpen(true);
